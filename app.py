@@ -130,15 +130,16 @@ with results_tab:
                         except Exception:
                             st.code(str(ev))
                     if st.button(f"Fix via Wrapper — {f.get('id','')}", key=f"apply_{f.get('id','')}"):
-                        backend = st.session_state["BACKEND_URL"].rstrip("/")
                         try:
-                            rr = requests.post(f"{backend}/apply", json={"ids": [f.get("id")]}, timeout=60)
+                            rr = requests.post(f"{BACKEND_URL}/apply", json={"ids":[f.get("id")]}, timeout=60)
                             rr.raise_for_status()
                             st.session_state.scan = rr.json()
-                            st.success("Fix applied. Re-scanned.")
-                            st.rerun()
+                            st.success("Fix applied and re-scanned.")
+                            # st.switch_page("app.py") <-- REMOVE
+                            st.experimental_rerun()    # optional
                         except Exception as e:
-                            st.error(f"Could not apply fix: {e}")
+                            st.error(f"Apply failed: {e}")
+
 
         c1, c2 = st.columns([1,1])
         with c1:
