@@ -83,7 +83,7 @@ with scan_tab:
                 st.error(f"Scan failed: {e}")
             else:
                 st.success("Scan complete")
-        st.switch_page("app.py")  # refresh view so Results tab can render
+        
 
 # ---------- Helpers ----------
 SEVERITY_ORDER = {"high": 3, "med": 2, "low": 1}
