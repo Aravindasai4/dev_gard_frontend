@@ -111,18 +111,23 @@ with results_tab:
         findings = data.get("findings", [])
         if not findings:
             st.success("No active findings. 🎉")
-        for f in findings:
-            with st.expander(f"{f.get('severity','').upper()} — {f.get('title','')}"):
-                if f.get("details"): st.write(f["details"])
+        for i, f in enumerate(findings):
+            fid = f.get("id") or f"auto_{i}"
+            sev = (f.get("severity") or "").upper()
+            title = f.get("title") or f"Finding {i+1}"
+
+            with st.expander(f"{sev} — {title}", expanded=False, key=f"exp_{i}"):
+                if f.get("details"):
+                    st.write(f["details"])
                 ev = f.get("evidence")
                 if ev is not None:
                     try:
                         st.code(json.dumps(ev, indent=2), language="json")
                     except Exception:
                         st.code(str(ev))
-                if st.button(f"Fix via Wrapper — {f.get('id','')}", key=f"fix_{f.get('id','')}"):
+                if st.button(f"Fix via Wrapper — {fid}", key=f"fix_{i}_{fid}"):
                     try:
-                        rr = post_json("/apply", {"ids": [f.get("id")]}, timeout=45)
+                        rr = post_json("/apply", {"ids": [fid]}, timeout=45)
                         st.write("DEBUG apply status:", rr.status_code)
                         st.write("DEBUG apply body:", rr.text[:400])
                         rr.raise_for_status()
@@ -133,13 +138,13 @@ with results_tab:
                         st.error(f"Could not apply fix: {e}")
 
         # Export PDF
-        if st.button("Export PDF Report"):
+        if st.button("Export PDF Report", key="btn_pdf"):
             try:
                 pdf_url = f"{st.session_state.backend.rstrip('/')}/report.pdf"
                 pdf = requests.get(pdf_url, timeout=60)
                 st.write("DEBUG pdf status:", pdf.status_code)
                 pdf.raise_for_status()
-                st.download_button("Download report.pdf", data=pdf.content, file_name="devguard-report.pdf", mime="application/pdf")
+                st.download_button("Download report.pdf", data=pdf.content, file_name="devguard-report.pdf", mime="application/pdf", key="dl_pdf")
             except Exception as e:
                 st.error(f"Could not fetch PDF: {e}")
 
